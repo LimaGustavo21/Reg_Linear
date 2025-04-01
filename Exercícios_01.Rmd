@@ -1,0 +1,75 @@
+---
+title: "CE310 - Modelos de Regressão Linear "
+output: html_notebook
+---
+
+## Lista de exercícios 
+
+<br>
+<br>
+ 
+ 
+ 
+
+#### 1. Defina o modelo de regressão linear simples. Especifique cada um de seus componentes e as suposições assumidas para os erros.
+
+ - O modelo de regressão linear simples é definido pelo ajuste de uma reta que estabelece a relação entre uma variável resposta (Y) e uma variável explicativa (X). 
+ - O modelo possui a seguinte forma: __y = B0 + B1X + e__, onde __y__ é a variável resposta, __B0__ é o intercepto da reta, __B1__ é o coeficiente de inclinação da reta, que pode ser interpretado como o efeito linear de X em Y, __X__ é a variável explicativa e o __e__ é o erro aleatório associado à reta ajustada dos valores reais de Y. 
+- Algumas suposições importantes para o erro: Deve seguir uma distribuição normal com média centrada em 0 e, independência entre os erros, ou seja, não pode existir correlação entre um erro e outro, e a homocedasticidade dos erros, ou seja, a variância deve ser constante em todos os intervalos de X.
+
+<br>
+
+
+#### 2. Qual o princípio da estimação por mínimos quadrados? Quais as principais propriedades dos estimadores de mínimos quadrados dos parâmetros de um modelo de regressão linear?
+
+ - Estimação por mínimos quadrados segue o princípio de estimar uma reta cujo a soma das distâncias entre a reta e os valores reais seja mínima.
+
+<br>
+
+#### 3. Qual o princípio da estimação por máxima verossimilhança? Qual a relação dos estimadores de mínimos quadrados e de máxima verossimilhança dos parâmetros do modelo de regressão linear se assumirmos que os erros são normalmente distribuídos?
+
+
+
+<br>
+
+#### 4. Considere o modelo de regressão linear simples com β0 = 10, β1 = 5 e σ = 4. Assuma distribuição normal para os erros.
+
+
+ - a) Apresente gráficos da distribuição de y condicional a (i) x = 3; (ii) x = 5 e (iii) x = 10;
+ 
+```{r}
+b0 <- 10
+b1 <- 5
+sigma <- 4
+
+erro <- rnorm(1000,0,sigma)
+
+y1 <- b0 + b1*3 + erro
+
+y2 <- b0 + b1*5 + erro
+
+y3 <- b0 + b1*10 + erro
+
+
+par(mfrow = c(1, 3))
+
+hist(y1);hist(y2);hist(y3)
+
+```
+ - b) Descreva o significado de β0 e β1. Suponha que x = 0 pertença ao escopo do modelo;
+    
+    - β0 é o intercepto da reta. Em termos prático, ele representa o valor médio de Y dado que X = 0 
+    
+    - β1 é o coeficiente angular da reta. Podemos interpretar como o efeito linear de X em Y, ou seja, para cada unidade de X tem impacto β1 em Y.
+    
+<br>
+    
+- c) Calcule P(20 < y < 30) para: (i) x = 3; x = 5.
+```{r}
+#x = 3
+mean(y1<30 & y1>20)
+#x = 5
+mean(y2<30 & y2>20)
+```
+
+
