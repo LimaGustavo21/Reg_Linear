@@ -18,7 +18,7 @@ exp <- exp[-1, ] #Remove a primeira linha "Estado do Paraná"
 
 hist(exp$Renda_M_10)
 
-
+exp[exp$Renda_M_10 == max(exp$Renda_M_10),]
 #PIB
 
 PIB <- read.csv("Trabalho_1/PIB per Capita_Tabela.csv",  sep = "\t", fileEncoding = "UTF-8", skip = 1,  colClasses = "character")
@@ -150,6 +150,20 @@ summary(tur)
 
 
 
+urb <-  read.csv("Trabalho_1/Grau de Urbanização_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, , colClasses = "character" )
+
+
+
+urb$pct_urb22 <-  as.numeric(gsub(",", ".", gsub("\\.", "", urb$X2022))) ; urb$X2022 <- NULL
+
+urb$Região.a.que.Pertence <-  NULL
+
+
+summary(urb)
+
+
+
+
 dados <- merge(exp, PIB, by = "Município.Estado")
 
 
@@ -164,6 +178,8 @@ dados <- merge(dados, grav, by = "Município.Estado")
 dados <- merge(dados, densi, by = "Município.Estado")
 
 dados <- merge(dados, tur, by = "Município.Estado")
+
+dados <- merge(dados, urb, by = "Município.Estado")
 
 
 
@@ -184,7 +200,7 @@ plot(modelo$residuals)
 
 
 #Testando variáveis importantes para o modelo
-modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais, data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
+modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22, data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
 summary(modelo_reduzido)
 
 
