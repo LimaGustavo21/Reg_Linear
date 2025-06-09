@@ -29,8 +29,12 @@ sane <- read.csv("Trabalho_1/Atendimento de Esgoto_Tabela.csv", sep = "\t", file
 fecun <- read.csv("Trabalho_1/Taxa de Fecundidade_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
 prof <- read.csv("Trabalho_1/Docentes_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
 fx_etaria <- read.csv("Trabalho_1/População Censitária_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
-
-
+taxa_morte <- read.csv("Trabalho_1/Taxa de Mortalidade_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+taxa_morte$taxa_morte23 <- as.numeric(gsub(",", ".", gsub("\\.", "", taxa_morte$Geral..mil.habitantes.))); taxa_morte$Geral..mil.habitantes. <- NULL
+taxa_morte$X.1 <- NULL
+summary(taxa_morte)
+taxa_morte$Município.Estado <- taxa_morte$X 
+taxa_morte$X <- NULL
 ## Vamos formatar as variaveis em numeric
 
 exp$Renda_M_10 <- as.numeric(gsub(",", ".", gsub("\\.", "", exp$X2010)))
@@ -139,6 +143,8 @@ dados <- merge(dados, fecun, by = "Município.Estado")
 dados <- merge(dados, prof, by = "Município.Estado")
 dados <- merge(dados, fx_etaria[, c("Município.Estado", "Pop_5_18")],
                by = "Município.Estado", all.x = TRUE)
+dados <- merge(dados, taxa_morte, by = "Município.Estado")
+summary(dados)
 
 ### Criou variaveis - Gustavo
 dados$aln_por_prof <-  dados$Pop_5_18/ dados$qtd_prof24

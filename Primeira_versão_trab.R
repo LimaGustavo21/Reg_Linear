@@ -30,9 +30,6 @@ PIB$Região.a.que.Pertence <- NULL ; PIB$X2021 <- NULL
 
 summary(PIB)
 
-
-
-
 #População 
 
 
@@ -238,6 +235,8 @@ fx_etaria <- read.csv("Trabalho_1/População Censitária_Tabela.csv", sep = "\t
 
 head(fx_etaria)
 
+
+
 # Lista de colunas que você quer tratar
 cols <- c("X5.anos", "X6.anos", "X7.anos", "X8.anos", "X9.anos", 
           "X10.anos", "X11.anos", "X12.anos", "X13.anos", "X14.anos",
@@ -253,6 +252,70 @@ fx_etaria$Município.Estado <- fx_etaria$X
 summary(fx_etaria)
 
 
+
+#taxa de mortalidade
+taxa_morte <- read.csv("Trabalho_1/Taxa de Mortalidade_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+taxa_morte$taxa_morte23 <- as.numeric(gsub(",", ".", gsub("\\.", "", taxa_morte$Geral..mil.habitantes.))); taxa_morte$Geral..mil.habitantes. <- NULL
+taxa_morte$X.1 <- NULL
+summary(taxa_morte)
+taxa_morte$Município.Estado <- taxa_morte$X 
+taxa_morte$X <- NULL
+
+#taxa de atividade
+taxa_atividade <- read.csv("Trabalho_1/Taxa de Atividade_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+taxa_atividade$atv_18_ou_mais10 <- as.numeric(gsub(",", ".", gsub("\\.", "", taxa_atividade$X18.anos.ou.mais....))); taxa_atividade$X18.anos.ou.mais.... <- NULL
+taxa_atividade$X.1 <- NULL
+taxa_atividade$Município.Estado <- taxa_atividade$X 
+taxa_atividade$X <- NULL
+summary(taxa_morte)    
+head(taxa_atividade)     #ao colocar essa no modelo a taxa de mortalidade foi inutulizada (podem estar correlacionadas na analise)
+
+#agencias bancárias
+agencias_bancarias <- read.csv("Trabalho_1/Agências Bancárias_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+agencias_bancarias$agenc_bancarias24 <- as.numeric(gsub(",", ".", gsub("\\.", "", agencias_bancarias$Total))); agencias_bancarias$Total <- NULL
+agencias_bancarias$X.1 <- NULL
+agencias_bancarias$Município.Estado <- agencias_bancarias$X 
+agencias_bancarias$X <- NULL
+#transformando os NA em 0
+agencias_bancarias[is.na(agencias_bancarias)] <- 0
+summary(agencias_bancarias)
+head(agencias_bancarias)   #teve o p valor muito alto: 0.22.. (nao vale a pena colocar no modelo reduzido)
+
+#indice de gini
+indice_gini <- read.csv("Trabalho_1/Índice de Gini_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", colClasses = "character" )
+indice_gini$gini10 <- as.numeric(gsub(",", ".", gsub("\\.", "", indice_gini$Índice.de.Gini...Geral))); indice_gini$Índice.de.Gini...Geral <- NULL
+indice_gini$X.1 <- NULL
+indice_gini$Município.Estado <- indice_gini$X
+indice_gini$X <- NULL
+head(indice_gini)
+summary(agencias_bancarias) #tem otimo p-valor *** mas deixou o p-valor do PIB21 um pouco pior ** (mas ainda interessante de deixar no modelo reduzido)
+
+#taxa de aprovação
+taxa_aprovacao <- read.csv("Trabalho_1/Taxa de Aprovação_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+taxa_aprovacao$aprovacao_medio23 <- as.numeric(gsub(",", ".", gsub("\\.", "", taxa_aprovacao$Ensino.Médio....))); taxa_aprovacao$Ensino.Médio.... <- NULL
+taxa_aprovacao$X.1 <- NULL
+taxa_aprovacao$Município.Estado <- taxa_aprovacao$X
+taxa_aprovacao$X <- NULL
+head(taxa_aprovacao)
+summary(taxa_aprovacao) #p-valor muito alto: 0.65 (nao vale a pena colocar no modelo reduzido)
+
+#taxa de pobreza
+taxa_pobreza <- read.csv("Trabalho_1/Taxa de Pobreza_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", colClasses = "character" )
+taxa_pobreza$pobreza10 <- as.numeric(gsub(",", ".", gsub("\\.", "", taxa_pobreza$Taxa.de.Pobreza....))); taxa_pobreza$Taxa.de.Pobreza.... <- NULL
+taxa_pobreza$X.1 <- NULL
+taxa_pobreza$Município.Estado <- taxa_pobreza$X
+taxa_pobreza$X <- NULL
+head(taxa_pobreza)
+summary(taxa_pobreza) #p-valor muito bom *** mas diminuiu ainda mais o p-valor do PIB21 ficou "*" : 0.042...
+
+#taxa de ocupação
+taxa_ocupacao <- read.csv("Trabalho_1/Taxa de Ocupação_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+taxa_ocupacao$ocupacao_18_mais10 <- as.numeric(gsub(",", ".", gsub("\\.", "", taxa_ocupacao$X18.anos.ou.mais....))); taxa_ocupacao$X18.anos.ou.mais.... <- NULL
+taxa_ocupacao$X.1 <- NULL
+taxa_ocupacao$Município.Estado <- taxa_ocupacao$X
+taxa_ocupacao$X <- NULL
+head(taxa_ocupacao)
+summary(taxa_ocupacao) #p-valor medio (analisar se vale a pena deixar no modelo reduzido depois): 0.013...
 
 dados <- merge(exp, PIB, by = "Município.Estado")
 
@@ -283,8 +346,19 @@ dados <- merge(dados, prof, by = "Município.Estado")
 dados <- merge(dados, fx_etaria[, c("Município.Estado", "Pop_5_18")], 
                by = "Município.Estado", all.x = TRUE)
 
+dados <- merge(dados, taxa_morte, by = "Município.Estado")
 
+dados <- merge(dados, taxa_atividade, by = "Município.Estado")
 
+dados <- merge(dados, agencias_bancarias, by = "Município.Estado")
+
+dados <- merge(dados, indice_gini, by = "Município.Estado")
+
+dados <- merge(dados, taxa_aprovacao, by = "Município.Estado")
+
+dados <- merge(dados, taxa_pobreza, by = "Município.Estado")
+
+dados <- merge(dados, taxa_ocupacao, by = "Município.Estado")
 
 dados$aln_por_prof <-  dados$Pop_5_18/ dados$qtd_prof24
 
@@ -303,7 +377,7 @@ dados$densidade_ensino <- dados$qtd_ensino24 / dados$tamanho
 
 summary(dados)
 
-dados$Município.Estado <- NULL
+
 
 modelo <- lm(Renda_M_10 ~ ., data = dados[,-1])
 summary(modelo)
@@ -313,7 +387,7 @@ plot(modelo$residuals)
 sort(cor(dados$Renda_M_10, dados[, -1], use = "complete.obs"),decreasing = T)
 
 #Testando variáveis importantes para o modelo
-modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + dist_cap21 +taxa_fecun10 + aln_por_prof , data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
+modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + dist_cap21 +taxa_fecun10 + atv_18_ou_mais10 + gini10 + pobreza10 + ocupacao_18_mais10, data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
 summary(modelo_reduzido)
 
 
