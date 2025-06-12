@@ -1,4 +1,3 @@
-
 #Carregando os Dados e formatando tabela
 
 
@@ -15,10 +14,20 @@ summary(exp)
 exp <- exp[-1, ] #Remove a primeira linha "Estado do Paraná"
 
 
+hist(exp$Renda_M_10,
+     main = "Renda média domiciliar per capita",
+     xlab = "Renda em R$",
+     col = "grey",
+     border = "white")
 
-hist(exp$Renda_M_10)
-
+# Adiciona linha vertical na média
+abline(v = mean(exp$Renda_M_10, na.rm = TRUE), col = "red", lty = 2, lwd = 2)
 exp[exp$Renda_M_10 == max(exp$Renda_M_10),]
+
+exp_ordenado <- exp[order(exp$Renda_M_10, decreasing = TRUE), ]
+
+head(exp_ordenado)
+
 #PIB
 
 PIB <- read.csv("Trabalho_1/PIB per Capita_Tabela.csv",  sep = "\t", fileEncoding = "UTF-8", skip = 1,  colClasses = "character")
@@ -257,7 +266,6 @@ summary(fx_etaria)
 taxa_morte <- read.csv("Trabalho_1/Taxa de Mortalidade_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
 taxa_morte$taxa_morte23 <- as.numeric(gsub(",", ".", gsub("\\.", "", taxa_morte$Geral..mil.habitantes.))); taxa_morte$Geral..mil.habitantes. <- NULL
 taxa_morte$X.1 <- NULL
-summary(taxa_morte)
 taxa_morte$Município.Estado <- taxa_morte$X 
 taxa_morte$X <- NULL
 
@@ -267,8 +275,6 @@ taxa_atividade$atv_18_ou_mais10 <- as.numeric(gsub(",", ".", gsub("\\.", "", tax
 taxa_atividade$X.1 <- NULL
 taxa_atividade$Município.Estado <- taxa_atividade$X 
 taxa_atividade$X <- NULL
-summary(taxa_morte)    
-head(taxa_atividade)     #ao colocar essa no modelo a taxa de mortalidade foi inutulizada (podem estar correlacionadas na analise)
 
 #agencias bancárias
 agencias_bancarias <- read.csv("Trabalho_1/Agências Bancárias_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
@@ -278,8 +284,7 @@ agencias_bancarias$Município.Estado <- agencias_bancarias$X
 agencias_bancarias$X <- NULL
 #transformando os NA em 0
 agencias_bancarias[is.na(agencias_bancarias)] <- 0
-summary(agencias_bancarias)
-head(agencias_bancarias)   #teve o p valor muito alto: 0.22.. (nao vale a pena colocar no modelo reduzido)
+#teve o p valor muito alto: 0.22.. (nao vale a pena colocar no modelo reduzido)
 
 #indice de gini
 indice_gini <- read.csv("Trabalho_1/Índice de Gini_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", colClasses = "character" )
@@ -296,7 +301,6 @@ taxa_aprovacao$aprovacao_medio23 <- as.numeric(gsub(",", ".", gsub("\\.", "", ta
 taxa_aprovacao$X.1 <- NULL
 taxa_aprovacao$Município.Estado <- taxa_aprovacao$X
 taxa_aprovacao$X <- NULL
-head(taxa_aprovacao)
 summary(taxa_aprovacao) #p-valor muito alto: 0.65 (nao vale a pena colocar no modelo reduzido)
 
 #taxa de pobreza
@@ -305,7 +309,6 @@ taxa_pobreza$pobreza10 <- as.numeric(gsub(",", ".", gsub("\\.", "", taxa_pobreza
 taxa_pobreza$X.1 <- NULL
 taxa_pobreza$Município.Estado <- taxa_pobreza$X
 taxa_pobreza$X <- NULL
-head(taxa_pobreza)
 summary(taxa_pobreza) #p-valor muito bom *** mas diminuiu ainda mais o p-valor do PIB21 ficou "*" : 0.042...
 
 #taxa de ocupação
@@ -314,8 +317,35 @@ taxa_ocupacao$ocupacao_18_mais10 <- as.numeric(gsub(",", ".", gsub("\\.", "", ta
 taxa_ocupacao$X.1 <- NULL
 taxa_ocupacao$Município.Estado <- taxa_ocupacao$X
 taxa_ocupacao$X <- NULL
-head(taxa_ocupacao)
 summary(taxa_ocupacao) #p-valor medio (analisar se vale a pena deixar no modelo reduzido depois): 0.013...
+
+# Consumo_energia
+Consumo_energia <- read.csv("Trabalho_1/Consumo_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+Consumo_energia$Município.Estado <- Consumo_energia$X
+Consumo_energia$Total_consumo_energia <- as.numeric(gsub(",", ".", gsub("\\.", "", Consumo_energia$Total..Mwh.)))
+Consumo_energia <- subset(Consumo_energia, select = c(Município.Estado, Total_consumo_energia))
+
+# Estabelecimento de Saúde
+Estabelecimento_saude <- read.csv("Trabalho_1/Estab. de Saúde - Tipo_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+Estabelecimento_saude$Município.Estado <- Estabelecimento_saude$X
+Estabelecimento_saude$Total_estabelecimento_saude <- as.numeric(gsub(",", ".", gsub("\\.", "", Estabelecimento_saude$Total)))
+Estabelecimento_saude <- subset(Estabelecimento_saude, select = c(Município.Estado, Total_estabelecimento_saude))
+
+# Estabelecimento_setores
+Estabelecimentos_gerais <- read.csv("Trabalho_1/Estabelecimentos nas ACTs_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+Estabelecimentos_gerais$Município.Estado <- Estabelecimentos_gerais$X
+Estabelecimentos_gerais$Total_estabelecimentos <- as.numeric(gsub(",", ".", gsub("\\.", "", Estabelecimentos_gerais$Total)))
+Estabelecimentos_gerais$Total_estabelecimentos_alimentacao <- as.numeric(gsub(",", ".", gsub("\\.", "", Estabelecimentos_gerais$Alimentação)))
+Estabelecimentos_gerais <- subset(Estabelecimentos_gerais, select = c(Município.Estado, Total_estabelecimentos,Total_estabelecimentos_alimentacao))
+Estabelecimentos_gerais[is.na(Estabelecimentos_gerais)] <- 0
+
+# Frotas 
+Frotas <- read.csv("Trabalho_1/Frota de Veículos_Tabela.csv", sep = "\t", fileEncoding = "UTF-16LE", skip = 1, colClasses = "character" )
+Frotas$Município.Estado <- Frotas$X
+Frotas$Total_frotas <- as.numeric(gsub(",", ".", gsub("\\.", "", Frotas$Total)))
+Frotas <- subset(Frotas, select = c(Município.Estado, Total_frotas))
+
+
 
 dados <- merge(exp, PIB, by = "Município.Estado")
 
@@ -360,6 +390,14 @@ dados <- merge(dados, taxa_pobreza, by = "Município.Estado")
 
 dados <- merge(dados, taxa_ocupacao, by = "Município.Estado")
 
+dados <- merge(dados, Consumo_energia, by = "Município.Estado")
+
+dados <- merge(dados, Estabelecimento_saude, by = "Município.Estado")
+dados <- merge(dados, Estabelecimentos_gerais, by = "Município.Estado")
+dados <- merge(dados, Frotas, by = "Município.Estado")
+
+
+
 dados$aln_por_prof <-  dados$Pop_5_18/ dados$qtd_prof24
 
 dados$tamanho <- dados$populacao24 / dados$densi_demo24
@@ -381,16 +419,64 @@ summary(dados)
 
 modelo <- lm(Renda_M_10 ~ ., data = dados[,-1])
 summary(modelo)
+dados$populacao24 <- log(dados$populacao24)
+dados$PIB21 <- log(dados$PIB21)
+dados$dist_cap21 <- log(dados$dist_cap21)
+#---------------------------------------------------- FIZ NA AULA DA FERNANDA
 
-plot(modelo$residuals)
-
-sort(cor(dados$Renda_M_10, dados[, -1], use = "complete.obs"),decreasing = T)
-
-#Testando variáveis importantes para o modelo
-modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + dist_cap21 +taxa_fecun10 + atv_18_ou_mais10 + gini10 + pobreza10 + ocupacao_18_mais10, data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
+modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais+ pct_urb22 + dist_cap21 + taxa_fecun10  +com_tur_km +atv_18_ou_mais10 +Total_estabelecimento_saude, data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
 summary(modelo_reduzido)
 
 
+library(MASS)
+
+box <- boxcox(modelo_reduzido, lambda = seq(-2, 2, 0.1))
+
+lambda <- box$x[which.max(box$y)]
+
+
+dados$Renda_M_10 <-  log(dados$Renda_M_10)
+#dados$populacao24 <-  log(dados$populacao24)
+dados_1 <- dados
+
+dados <- dados_1
+dados <- dados[-c(104,141,158, 156, 302, 204),]
+#dados <- dados[-c(95),]
+summary(dados_1)
+
+dados_1[c(104,141,158, 95, 156, 302),]
+#,95,302,156
+#atual
+
+#dados$Renda_M_10 <- dados$Renda_M_10/1000
+
+#Testando variáveis importantes para o modelo
+modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + dist_cap21 + taxa_fecun10 + atv_18_ou_mais10, data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
+summary(modelo_reduzido)
+
+
+
+
+# Padronização das variáveis explicativas
+dados_pad <- dados
+dados_pad$PIB21 <- scale(dados$PIB21)
+dados_pad$populacao24 <- scale(dados$populacao24)
+dados_pad$X65_mais <- scale(dados$X65_mais)
+dados_pad$pct_urb22 <- scale(dados$pct_urb22)
+dados_pad$dist_cap21 <- scale(dados$dist_cap21)
+dados_pad$atv_18_ou_mais10 <- scale(dados$atv_18_ou_mais10)
+
+# Ajusta o modelo padronizado
+modelo_reduzido_pad <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + dist_cap21 + atv_18_ou_mais10, data = dados_pad)
+
+# Sumário do modelo padronizado
+summary(modelo_reduzido_pad)
+
+
+
+
+
+#---------------------------------------------------------------------------------------------------------------
 plot(modelo_reduzido$residuals)
 
 
@@ -401,40 +487,156 @@ plot(residuos_padronizados,
      main = "Resíduos Padronizados",
      ylab = "Resíduos Padronizados",
      xlab = "Índice",
-     pch = 20, col = "blue")
+     pch = 20, col = "black")
 abline(h = 0, col = "red", lty = 2)
 
+#testando os pressupostos
 
-dados[which(residuos_padronizados > 3), ]
+#1. linearidade e homocedasticidade
+#Resíduos vs valores ajustados
+plot(modelo_reduzido$fitted.values, modelo_reduzido$residuals,
+     main = "Resíduos vs Valores Ajustados",
+     xlab = "Valores Ajustados",
+     ylab = "Resíduos",
+     pch = 20, col = "black")
+abline(h = 0, col = "grey", lty = 2)
+#se os resíduos estão espalhados aleatoriamenre a pressuposição é aceita
+
+# Realiza o teste de Shapiro-Wilk
+shapiro_result <- shapiro.test(modelo_reduzido$residuals)
+
+# QQ-plot dos resíduos
+qqnorm(modelo_reduzido$residuals, 
+       main = "QQ-Plot dos Resíduos com Teste de Normalidade",
+       pch = 20, col = "black")
+qqline(modelo_reduzido$residuals, col = "red", lty = 2)
+
+# Adiciona os valores do teste no canto inferior direito do gráfico
+text(x = 0.5, y = min(modelo_reduzido$residuals),
+     labels = paste0("W = ", round(shapiro_result$statistic, 4),
+                     "\n", "p = ", format.pval(shapiro_result$p.value, digits = 3, eps = .001)),
+     pos = 4, col = "black", cex = 0.9)
+#como no teste nosso p deu menor que 0.05 podemos dizer que os resíduos não seguem uma distribuição normal
+
+#aqui temos uma detecção de outliers
+dados[which(residuos_padronizados < -3), ]
+
+#gráficos para mostrar esses dados outliers
+
+cooks <- cooks.distance(modelo_reduzido)
+plot(cooks, type = "h", main = "Distância de Cook", ylab = "Cook's Distance")
+abline(h = 4 / nrow(dados), col = "red", lty = 2)
+
+
+#metodo box cox
+
+# Cálculo da distância de Cook
+cooks <- cooks.distance(modelo_reduzido)
+
+# Limite clássico para ponto influente
+limite_cook <- 0.015
+
+# Índices das observações influentes
+influentes <- which(cooks > limite_cook)
+
+# Tabela com os municípios influentes e suas respectivas distâncias de Cook
+dados_influentes <- data.frame(
+  Indice = influentes,
+  Municipio = dados$Município.Estado[influentes],
+  Distancia_Cook = cooks[influentes]
+)
+#---------------------------------------------------------------------------------------------------------------
+dados_influentes <- dados_influentes[order(dados_influentes$Distancia_Cook, decreasing = TRUE), ]
+
+# Visualiza a tabela ordenada
+print(dados_influentes)
 
 
 
+# Intervalos de confiança dos coeficientes (nível 95%)
+ic_betas <- confint(modelo_reduzido_pad)
 
-modelo_reduzido_2 <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + natalidade23 , data = dados) 
-summary(modelo_reduzido_2)
+# Estimativas dos coeficientes
+betas <- coef(modelo_reduzido_pad)
 
+# Junta tudo em um data frame para plotagem
+df_betas <- data.frame(
+  Variavel = names(betas),
+  Estimativa = betas,
+  IC_inf = ic_betas[,1],
+  IC_sup = ic_betas[,2]
+)
 
+# Remove o intercepto se quiser focar nos preditores
+df_betas <- df_betas[df_betas$Variavel != "(Intercept)", ]
 
-AIC(modelo_reduzido,modelo_reduzido_2 )#Aparentemente Natalidade não agregou pro modelo 
+# Plot
+library(ggplot2)
+ggplot(df_betas, aes(x = reorder(Variavel, Estimativa), y = Estimativa)) +
+  geom_point(size = 2, color = "blue") +
+  geom_errorbar(aes(ymin = IC_inf, ymax = IC_sup), width = 0.2, color = "darkgray") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  coord_flip() +
+  labs(
+    title = "Intervalos de Confiança (95%) dos Coeficientes",
+    x = "Variável",
+    y = "Estimativa do Coeficiente"
+  ) +
+  theme_minimal()
 
-#------- Grav
+  
 
-dados$grav_15a17 <- ifelse(is.na(dados$grav_15a17), 0, dados$grav_15a17)
-
-modelo_reduzido_3 <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + grav_15a17 , data = dados) 
-summary(modelo_reduzido_3) #Gravidez também não 
-
-
-# -------- Densdemo 
-modelo_reduzido_4 <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + densi_demo24 , data = dados) 
-summary(modelo_reduzido_4) #Densi também não 
-
-
-# -------- Turismo 
-modelo_reduzido_5 <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + Total , data = dados) 
-summary(modelo_reduzido_5) #Densi também não 
-
-
-
-
-
+  ggplot(df_betas, aes(x = Estimativa, y = reorder(Variavel, Estimativa))) +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  geom_errorbarh(aes(xmin = IC_inf, xmax = IC_sup), height = 0.2, color = "gray50") +
+  geom_point(aes(color = Estimativa > 0), size = 3) +
+  scale_color_manual(values = c("TRUE" = "blue", "FALSE" = "orange")) +
+  labs(
+    title = "Intervalos de Confiança (95%) dos Coeficientes",
+    x = "Estimativa do Coeficiente",
+    y = "Variável"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+  
+  
+  
+  
+  
+  
+  # 1. Retirando PIB21
+  m1 <- lm(Renda_M_10 ~ populacao24 + X65_mais + pct_urb22 + dist_cap21 + taxa_fecun10 + atv_18_ou_mais10, data = dados)
+  anova(m1, modelo_reduzido)
+  
+  # 2. Retirando populacao24
+  m2 <- lm(Renda_M_10 ~ PIB21 + X65_mais + pct_urb22 + dist_cap21 + taxa_fecun10 + atv_18_ou_mais10, data = dados)
+  anova(m2, modelo_reduzido)
+  
+  # 3. Retirando X65_mais
+  m3 <- lm(Renda_M_10 ~ PIB21 + populacao24 + pct_urb22 + dist_cap21 + taxa_fecun10 + atv_18_ou_mais10, data = dados)
+  anova(m3, modelo_reduzido)
+  
+  # 4. Retirando pct_urb22
+  m4 <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + dist_cap21 + taxa_fecun10 + atv_18_ou_mais10, data = dados)
+  anova(m4, modelo_reduzido)
+  
+  # 5. Retirando dist_cap21
+  m5 <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + taxa_fecun10 + atv_18_ou_mais10, data = dados)
+  anova(m5, modelo_reduzido)
+  
+  # 6. Retirando taxa_fecun10
+  m6 <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + dist_cap21 + atv_18_ou_mais10, data = dados)
+  anova(m6, modelo_reduzido)
+  
+  # 7. Retirando atv_18_ou_mais10
+  m7 <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + dist_cap21 + taxa_fecun10, data = dados)
+  anova(m7, modelo_reduzido)
+  
+  
+  
+  install.packages("car")
+  library(car)
+  
+  par(mfrow = c(1, 1))
+  plot(modelo)
+  
