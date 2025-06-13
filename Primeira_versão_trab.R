@@ -419,13 +419,9 @@ summary(dados)
 
 modelo <- lm(Renda_M_10 ~ ., data = dados[,-1])
 summary(modelo)
-dados$populacao24 <- log(dados$populacao24)
-dados$PIB21 <- log(dados$PIB21)
-dados$dist_cap21 <- log(dados$dist_cap21)
+
 #---------------------------------------------------- FIZ NA AULA DA FERNANDA
 
-modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais+ pct_urb22 + dist_cap21 + taxa_fecun10  +com_tur_km +atv_18_ou_mais10 +Total_estabelecimento_saude, data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
-summary(modelo_reduzido)
 
 
 library(MASS)
@@ -444,17 +440,31 @@ dados <- dados[-c(104,141,158, 156, 302, 204),]
 #dados <- dados[-c(95),]
 summary(dados_1)
 
-dados_1[c(104,141,158, 95, 156, 302),]
+dados <- dados[-c(104,141,158,292),]
 #,95,302,156
 #atual
-
+dados[156,]
 #dados$Renda_M_10 <- dados$Renda_M_10/1000
 
 #Testando variáveis importantes para o modelo
-modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + dist_cap21 + taxa_fecun10 + atv_18_ou_mais10, data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
+modelo_reduzido <- lm(Renda_M_10 ~ PIB21 + populacao24 + X65_mais + pct_urb22 + dist_cap21 + taxa_fecun10 + atv_18_ou_mais10 , data = dados) # A melhor dentre as variáveis de alfabetismo foi a 65 +
 summary(modelo_reduzido)
 
 
+
+library(lmtest)
+
+
+
+# Teste de Breusch-Pagan
+bptest(modelo_reduzido)
+
+
+
+bptest(modelo_reduzido, ~ fitted(modelo_reduzido) + I(fitted(modelo_reduzido)^2))
+plot(modelo_reduzido$fitted.values, rstandard(modelo_reduzido),
+     xlab = "Valores ajustados", ylab = "Resíduos studentizados")
+abline(h = 0, col = "red")
 
 
 # Padronização das variáveis explicativas
@@ -492,10 +502,15 @@ abline(h = 0, col = "red", lty = 2)
 
 #testando os pressupostos
 
-#1. linearidade e homocedasticidade
-#Resíduos vs valores ajustados
+library(lmtest)
+
+# Teste de Breusch-Pagan
+bp_test <- bptest(modelo_reduzido)
+p_valor <- round(bp_test$p.value, 4)
+
+# Gráfico com p-valor no título
 plot(modelo_reduzido$fitted.values, modelo_reduzido$residuals,
-     main = "Resíduos vs Valores Ajustados",
+     main = paste("Resíduos vs Valores Ajustados\np-valor BP =", p_valor),
      xlab = "Valores Ajustados",
      ylab = "Resíduos",
      pch = 20, col = "black")
@@ -519,8 +534,12 @@ text(x = 0.5, y = min(modelo_reduzido$residuals),
 #como no teste nosso p deu menor que 0.05 podemos dizer que os resíduos não seguem uma distribuição normal
 
 #aqui temos uma detecção de outliers
-dados[which(residuos_padronizados < -3), ]
+dados[which(residuos_padronizados > 3), ]
 
+dados$residuos_padronizados <- residuos_padronizados
+
+dados[dados$residuos_padronizados > 2.5, c("Município.Estado", "residuos_padronizados")]
+104,141,158, 292, 302, 204
 #gráficos para mostrar esses dados outliers
 
 cooks <- cooks.distance(modelo_reduzido)
@@ -640,3 +659,22 @@ ggplot(df_betas, aes(x = reorder(Variavel, Estimativa), y = Estimativa)) +
   par(mfrow = c(1, 1))
   plot(modelo)
   
+  
+  library(MASS)
+  
+  # Box-Cox
+  box <- boxcox(modelo_reduzido, lambda = seq(-2, 2, 0.1),
+                main = "Análise de Transformação Box-Cox",
+                xlab = expression(lambda), ylab = "Log-Verossimilhança")
+  
+  # Encontrar o lambda ótimo
+  lambda_otimo <- box$x[which.max(box$y)]
+  lambda_otimo <- round(lambda_otimo, 3)
+  
+  # Adicionar linha vertical no lambda ótimo
+  abline(v = lambda_otimo, col = "red", lty = 2, lwd = 2)
+  
+  # Adicionar legenda no gráfico
+  legend("topright",
+         legend = paste("Lambda ótimo =", lambda_otimo),
+         col = "red", lty = 2, lwd = 2, bty = "n", cex = 0.95)
